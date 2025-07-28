@@ -1,0 +1,9 @@
+torch>=2.0.1
+torch-geometric>=2.0.0
+tqdm
+numpy
+scipy
+pandas
+scikit-learn
+# If you're on Mac M1/M2, you may want:
+# torch==2.0.1 ; platform_machine=="arm64"
