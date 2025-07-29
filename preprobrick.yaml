@@ -1,0 +1,71 @@
+name: Preprocess Elliptic Data
+description: Analyzes class distribution and outputs alpha & class weights as JSON.
+
+inputs:
+  - { name: input_path, type: String } # input .pt data file
+
+outputs:
+  - {
+      name: weights_out,
+      type: Json,
+      description: "Class/focal weights as JSON",
+      path: "{weights_out}",
+    } # weights.json
+
+implementation:
+  container:
+    image: python:3.9
+    command:
+      - sh
+      - -c
+      - |
+        PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet torch torch_geometric --user
+        PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet torch || \
+        PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet torch --user
+        exec "$0" "$@"
+      - python3
+      - -u
+      - -c
+      - |
+        import torch
+        import argparse
+        import os
+        import json
+
+        def analyze_class_distribution(data):
+            train_labels = data.y[data.train_mask]
+            known_mask = train_labels != 2
+            known_labels = train_labels[known_mask]
+            licit_count = (known_labels == 0).sum().item()
+            illicit_count = (known_labels == 1).sum().item()
+            total_known = len(known_labels)
+            ce_weight_licit = total_known / (2 * licit_count) if licit_count > 0 else 1
+            ce_weight_illicit = total_known / (2 * illicit_count) if illicit_count > 0 else 1
+            class_weights = [ce_weight_licit, ce_weight_illicit, 0.0]
+            alpha_licit = illicit_count / total_known
+            alpha_illicit = licit_count / total_known
+            alpha_weights = [alpha_licit, alpha_illicit, 0.0]
+            return alpha_weights, class_weights
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--input_path', type=str, required=True)
+        parser.add_argument('--weights_out', type=str, required=True)
+        args = parser.parse_args()
+
+        os.makedirs(os.path.dirname(args.weights_out), exist_ok=True)
+
+        data = torch.load(args.input_path)
+        alpha_weights, class_weights = analyze_class_distribution(data)
+
+        # Save weights
+        weights_dict = {'focal_loss_alpha': alpha_weights, 'class_weights': class_weights}
+        with open(args.weights_out, 'w') as f:
+            json.dump(weights_dict, f)
+
+        print(f"Saved weights to {args.weights_out}")
+
+    args:
+      - --input_path
+      - { inputPath: input_path }
+      - --weights_out
+      - { outputPath: weights_out }
