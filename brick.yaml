@@ -1,11 +1,16 @@
-name: Elliptic Data Statistics
-description: Loads a PyTorch Geometric data file, prints summary statistics, and outputs it unchanged.
+name: Load Elliptic Bitcoin Dataset
+description: Loads the EllipticBitcoinDataset and saves as a PyTorch data file.
 
 inputs:
-  - {name: data_path, type: String, description: "Input .pt file path for PyG Data object"}
+  - { name: root_path, type: String } # where to store raw data
 
 outputs:
-  - {name: output_path, type: String, description: "Output .pt file path (copied/unchanged)", path: "{output_path}"}
+  - {
+      name: output_path,
+      type: String,
+      description: "Output .pt file path",
+      path: "{output_path}",
+    }
 
 implementation:
   container:
@@ -14,38 +19,33 @@ implementation:
       - sh
       - -c
       - |
-        PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet torch || \
-        PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet torch --user
+        PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet torch torch_geometric || \
+        PIP_DISABLE_PIP_VERSION_CHECK=1 python3 -m pip install --quiet torch torch_geometric --user
         exec "$0" "$@"
       - python3
       - -u
       - -c
       - |
         import torch
+        from torch_geometric.datasets import EllipticBitcoinDataset
         import argparse
         import os
-        import shutil
 
         parser = argparse.ArgumentParser()
-        parser.add_argument('--data_path', type=str, required=True)
+        parser.add_argument('--root_path', type=str, required=True)
         parser.add_argument('--output_path', type=str, required=True)
         args = parser.parse_args()
 
-        data = torch.load(args.data_path)
-
-        print("Elliptic Data Statistics:")
-        print(f"  Number of nodes: {data.num_nodes}")
-        print(f"  Number of edges: {data.num_edges}")
-        print(f"  Number of features: {data.num_features}")
-
-        # Copy the data file to the output (for pipeline chaining)
+        os.makedirs(args.root_path, exist_ok=True)
         os.makedirs(os.path.dirname(args.output_path), exist_ok=True)
-        shutil.copyfile(args.data_path, args.output_path)
-        print(f"Output data copied to {args.output_path}")
+
+        dataset = EllipticBitcoinDataset(root=args.root_path)
+        data = dataset[0]
+        torch.save(data, args.output_path)
+        print(f"Saved raw data to {args.output_path}")
 
     args:
-      - --data_path
-      - {inputValue: data_path}
+      - --root_path
+      - { inputValue: root_path }
       - --output_path
-      - {outputPath: output_path}
-
+      - { outputPath: output_path }

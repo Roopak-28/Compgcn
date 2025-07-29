@@ -1,0 +1,111 @@
+{
+  "doc_type": "pipeline",
+  "version": "3.0",
+  "json_schema": "http://api.dataplatform.ibm.com/schemas/common-pipeline/pipeline-flow/pipeline-flow-v3-schema.json",
+  "id": "elyra-auto-generated-pipeline",
+  "primary_pipeline": "primary",
+  "pipelines": [
+    {
+      "id": "primary",
+      "nodes": [
+        {
+          "id": "06e31896-ccf6-459c-9074-ef7ecb4e09b0",
+          "type": "execution_node",
+          "op": "url-catalog:11b2ec1f6491",
+          "app_data": {
+            "component_parameters": {
+              "data_path": {
+                "widget": "parameter",
+                "value": "data_path"
+              },
+              "kubernetes_pod_annotations": [],
+              "kubernetes_pod_labels": [],
+              "kubernetes_shared_mem_size": {},
+              "kubernetes_tolerations": [],
+              "mounted_volumes": []
+            },
+            "component_source": "{\"catalog_type\": \"url-catalog\", \"component_ref\": {\"url\": \"https://raw.githubusercontent.com/Roopak-28/Compgcn/refs/heads/main/brick.yaml\"}}",
+            "label": "",
+            "ui_data": {
+              "label": "Elliptic Data Statistics",
+              "image": "/static/elyra/kubeflow.svg",
+              "x_pos": 245,
+              "y_pos": 171.5,
+              "description": "Loads a PyTorch Geometric data file, prints summary statistics, and outputs it unchanged."
+            }
+          },
+          "inputs": [
+            {
+              "id": "inPort",
+              "app_data": {
+                "ui_data": {
+                  "cardinality": {
+                    "min": 0,
+                    "max": -1
+                  },
+                  "label": "Input Port"
+                }
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "id": "outPort",
+              "app_data": {
+                "ui_data": {
+                  "cardinality": {
+                    "min": 0,
+                    "max": -1
+                  },
+                  "label": "Output Port"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "app_data": {
+        "ui_data": {
+          "comments": []
+        },
+        "version": 8,
+        "runtime_type": "KUBEFLOW_PIPELINES",
+        "properties": {
+          "name": "untitled4",
+          "runtime": "Kubeflow Pipelines",
+          "pipeline_parameters": [
+            {
+              "name": "data_path",
+              "description": "-",
+              "default_value": {
+                "type": "String",
+                "value": "/shared/elliptic_raw.pt"
+              },
+              "required": true
+            },
+            {
+              "name": "output_path",
+              "description": "-",
+              "default_value": {
+                "type": "String",
+                "value": "/shared/elliptic_stats.pt"
+              },
+              "required": true
+            }
+          ],
+          "pipeline_defaults": {
+            "kubernetes_shared_mem_size": {},
+            "kubernetes_pod_annotations": [],
+            "kubernetes_tolerations": [],
+            "kubernetes_pod_labels": [],
+            "mounted_volumes": [],
+            "kubernetes_secrets": [],
+            "env_vars": []
+          }
+        }
+      },
+      "runtime_ref": ""
+    }
+  ],
+  "schemas": []
+}
