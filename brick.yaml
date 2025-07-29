@@ -1,9 +1,6 @@
 name: Load Elliptic Bitcoin Dataset
 description: Loads the EllipticBitcoinDataset and saves as a PyTorch data file.
 
-inputs:
-  - { name: root_path, type: String } # where to store raw data
-
 outputs:
   - {
       name: output_path,
@@ -32,20 +29,19 @@ implementation:
         import os
 
         parser = argparse.ArgumentParser()
-        parser.add_argument('--root_path', type=str, required=True)
         parser.add_argument('--output_path', type=str, required=True)
         args = parser.parse_args()
 
-        os.makedirs(args.root_path, exist_ok=True)
+        # Use a fixed location to cache/download the data
+        root_path = '/data/elliptic'
+        os.makedirs(root_path, exist_ok=True)
         os.makedirs(os.path.dirname(args.output_path), exist_ok=True)
 
-        dataset = EllipticBitcoinDataset(root=args.root_path)
+        dataset = EllipticBitcoinDataset(root=root_path)
         data = dataset[0]
         torch.save(data, args.output_path)
         print(f"Saved raw data to {args.output_path}")
 
     args:
-      - --root_path
-      - { inputValue: root_path }
       - --output_path
       - { outputPath: output_path }
